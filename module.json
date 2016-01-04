@@ -19,12 +19,12 @@
   ],
   "dependencies": {
     "uvisor-lib": "~0.7.0",
-    "mbed-hal-st-stm32cubel4": "~0.0.0",
+    "mbed-hal-st-stm32cubel4": "carmelomigliore/mbed-hal-st-stm32cubel4",
     "mbed-hal": "*"
   },
   "targetDependencies": {
     "stm32l476rg": {
-      "mbed-hal-st-stm32l476rg": "~0.0.0"
+      "mbed-hal-st-stm32l476rg": "carmelomigliore/mbed-hal-st-stm32l476rg"
     }
   }
 }
