@@ -20,7 +20,7 @@
   "dependencies": {
     "uvisor-lib": "~0.7.0",
     "mbed-hal-st-stm32cubel4": "carmelomigliore/mbed-hal-st-stm32cubel4",
-    "mbed-hal": "*"
+    "mbed-hal": "carmelomigliore/mbed-hal"
   },
   "targetDependencies": {
     "stm32l476rg": {
