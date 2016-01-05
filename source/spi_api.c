@@ -75,7 +75,6 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk)
     SPIName spi_sclk = (SPIName)pinmap_peripheral(sclk, PinMap_SPI_SCLK);
 
     SPIName spi_data = (SPIName)pinmap_merge(spi_mosi, spi_miso);
-    SPIName spi_cntl = (SPIName)pinmap_merge(spi_sclk, spi_ssel);
 
     obj->spi = (SPIName)pinmap_merge(spi_data, spi_sclk);
     MBED_ASSERT(obj->spi != (SPIName)NC);
@@ -136,7 +135,7 @@ void spi_free(spi_t *obj)
     pin_function(obj->pin_sclk, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
 }
 
-void spi_format(spi_t *obj, int bits, int mode)
+void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
 {
     // Save new values
     if (bits == 16) {
@@ -162,6 +161,12 @@ void spi_format(spi_t *obj, int bits, int mode)
             obj->cpol = SPI_POLARITY_HIGH;
             obj->cpha = SPI_PHASE_2EDGE;
             break;
+    }
+
+    if (order == SPI_MSB) {
+        obj->order = SPI_FIRSTBIT_MSB;
+    } else {
+        obj->order = SPI_FIRSTBIT_LSB;
     }
 
     init_spi(obj);
