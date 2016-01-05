@@ -46,7 +46,7 @@ static void init_spi(spi_t *obj)
 
     __HAL_SPI_DISABLE(&SpiHandle);
 
-    SpiHandle.Init.Mode              = obj->mode;
+    SpiHandle.Init.Mode              = SPI_MODE_MASTER;
     SpiHandle.Init.BaudRatePrescaler = obj->br_presc;
     SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
     SpiHandle.Init.CLKPhase          = obj->cpha;
@@ -57,7 +57,7 @@ static void init_spi(spi_t *obj)
     SpiHandle.Init.DataSize          = obj->bits;
     SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
     SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
-    SpiHandle.Init.NSS               = obj->nss;
+    SpiHandle.Init.NSS               = SPI_NSS_SOFT;
     SpiHandle.Init.NSSPMode          = SPI_NSS_PULSE_DISABLE;
 
     if (HAL_SPI_Init(&SpiHandle) != HAL_OK) {
@@ -67,18 +67,17 @@ static void init_spi(spi_t *obj)
     __HAL_SPI_ENABLE(&SpiHandle);
 }
 
-void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel)
+void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk)
 {
     // Determine the SPI to use
     SPIName spi_mosi = (SPIName)pinmap_peripheral(mosi, PinMap_SPI_MOSI);
     SPIName spi_miso = (SPIName)pinmap_peripheral(miso, PinMap_SPI_MISO);
     SPIName spi_sclk = (SPIName)pinmap_peripheral(sclk, PinMap_SPI_SCLK);
-    SPIName spi_ssel = (SPIName)pinmap_peripheral(ssel, PinMap_SPI_SSEL);
 
     SPIName spi_data = (SPIName)pinmap_merge(spi_mosi, spi_miso);
     SPIName spi_cntl = (SPIName)pinmap_merge(spi_sclk, spi_ssel);
 
-    obj->spi = (SPIName)pinmap_merge(spi_data, spi_cntl);
+    obj->spi = (SPIName)pinmap_merge(spi_data, spi_sclk);
     MBED_ASSERT(obj->spi != (SPIName)NC);
 
     // Enable SPI clock
@@ -106,16 +105,6 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
     obj->pin_miso = miso;
     obj->pin_mosi = mosi;
     obj->pin_sclk = sclk;
-    obj->pin_ssel = ssel;
-
-    if (ssel == NC) { // SW NSS Master mode
-        obj->mode = SPI_MODE_MASTER;
-        obj->nss = SPI_NSS_SOFT;
-    } else { // Slave
-        pinmap_pinout(ssel, PinMap_SPI_SSEL);
-        obj->mode = SPI_MODE_SLAVE;
-        obj->nss = SPI_NSS_HARD_INPUT;
-    }
 
     init_spi(obj);
 }
@@ -145,10 +134,9 @@ void spi_free(spi_t *obj)
     pin_function(obj->pin_miso, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
     pin_function(obj->pin_mosi, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
     pin_function(obj->pin_sclk, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
-    pin_function(obj->pin_ssel, STM_PIN_DATA(STM_MODE_INPUT, GPIO_NOPULL, 0));
 }
 
-void spi_format(spi_t *obj, int bits, int mode, int slave)
+void spi_format(spi_t *obj, int bits, int mode)
 {
     // Save new values
     if (bits == 16) {
@@ -174,14 +162,6 @@ void spi_format(spi_t *obj, int bits, int mode, int slave)
             obj->cpol = SPI_POLARITY_HIGH;
             obj->cpha = SPI_PHASE_2EDGE;
             break;
-    }
-
-    if (slave == 0) {
-        obj->mode = SPI_MODE_MASTER;
-        obj->nss = SPI_NSS_SOFT;
-    } else {
-        obj->mode = SPI_MODE_SLAVE;
-        obj->nss = SPI_NSS_HARD_INPUT;
     }
 
     init_spi(obj);
@@ -291,41 +271,6 @@ int spi_master_write(spi_t *obj, int value)
 {
     ssp_write(obj, value);
     return ssp_read(obj);
-}
-
-int spi_slave_receive(spi_t *obj)
-{
-    return (ssp_readable(obj) ? 1 : 0);
-};
-
-int spi_slave_read(spi_t *obj)
-{
-    SPI_TypeDef *spi = (SPI_TypeDef *)(obj->spi);
-    while (!ssp_readable(obj));
-    //return (int)spi->DR;
-    if (obj->bits == SPI_DATASIZE_8BIT) {
-        // Force 8-bit access to the data register
-        uint8_t *p_spi_dr = 0;
-        p_spi_dr = (uint8_t *) & (spi->DR);
-        return (int)(*p_spi_dr);
-    } else {
-        return (int)spi->DR;
-    }
-}
-
-void spi_slave_write(spi_t *obj, int value)
-{
-    SPI_TypeDef *spi = (SPI_TypeDef *)(obj->spi);
-    while (!ssp_writeable(obj));
-    //spi->DR = (uint16_t)value;
-    if (obj->bits == SPI_DATASIZE_8BIT) {
-        // Force 8-bit access to the data register
-        uint8_t *p_spi_dr = 0;
-        p_spi_dr = (uint8_t *) & (spi->DR);
-        *p_spi_dr = (uint8_t)value;
-    } else { // SPI_DATASIZE_16BIT
-        spi->DR = (uint16_t)value;
-    }
 }
 
 int spi_busy(spi_t *obj)
