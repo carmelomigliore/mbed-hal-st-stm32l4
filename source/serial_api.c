@@ -27,6 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************
  */
+#include "uvisor-lib/uvisor-lib.h"
 #include "mbed_assert.h"
 #include "serial_api.h"
 
@@ -331,8 +332,8 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
             __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_TC);
         }
 
-        NVIC_SetVector(irq_n, vector);
-        NVIC_EnableIRQ(irq_n);
+        vIRQ_SetVector(irq_n, vector);
+        vIRQ_EnableIRQ(irq_n);
 
     } else { // disable
 
