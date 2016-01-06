@@ -85,8 +85,8 @@ static const IRQn_Type UartIRQs[UART_NUM] = {
 #endif
 };
 
-static uint32_t serial_irq_ids[UART_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
-static uart_irq_handler irq_handlers[UART_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
+static uint32_t serial_irq_ids[UART_NUM] = {0, 0, 0, 0, 0, 0};
+static uart_irq_handler irq_handlers[UART_NUM] = {0, 0, 0, 0, 0, 0};
 
 int stdio_uart_inited = 0;
 serial_t stdio_uart;
@@ -411,14 +411,14 @@ int serial_getc(serial_t *obj)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
     while (!serial_readable(obj));
-    return (int)(handle->Instance->DR & 0x1FF);
+    return (int)(handle->Instance->RDR & 0x1FF);
 }
 
 void serial_putc(serial_t *obj, int c)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
     while (!serial_writable(obj));
-    handle->Instance->DR = (uint32_t)(c & 0x1FF);
+    handle->Instance->TDR = (uint32_t)(c & 0x1FF);
 }
 
 int serial_readable(serial_t *obj)
@@ -500,7 +500,7 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
 
     // if the TX register is empty, directly input the first transmit byte
     if (__HAL_UART_GET_FLAG(handle, UART_FLAG_TXE)) {
-        handle->Instance->DR = *handle->pTxBuffPtr++;
+        handle->Instance->TDR = *handle->pTxBuffPtr++;
         handle->TxXferCount--;
     }
     // chose either the tx reg empty or if last byte wait directly for tx complete
@@ -562,21 +562,21 @@ int serial_irq_handler_asynch(serial_t *obj)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
 
-    int status = handle->Instance->SR;
-    int data = handle->Instance->DR;
+    int status = handle->Instance->ISR;
+    int data = handle->Instance->RDR;
     int event = 0;
 
-    if (status & USART_SR_PE) {
+    if (status & USART_ISR_PE) {
         event |= SERIAL_EVENT_RX_PARITY_ERROR;
     }
-    if (status & (USART_SR_NE | USART_SR_FE)) {
+    if (status & (USART_ISR_NE | USART_ISR_FE)) {
         event |= SERIAL_EVENT_RX_FRAMING_ERROR;
     }
-    if (status & USART_SR_ORE) {
+    if (status & USART_ISR_ORE) {
         event |= SERIAL_EVENT_RX_OVERRUN_ERROR;
     }
 
-    if ((status & USART_SR_TC) && (handle->State & 0x10) && !handle->TxXferCount) {
+    if ((status & USART_ISR_TC) && (handle->State & 0x10) && !handle->TxXferCount) {
         // transmission is finally complete
         handle->Instance->CR1 &= ~USART_CR1_TCIE;
         // set event tx complete
@@ -588,18 +588,18 @@ int serial_irq_handler_asynch(serial_t *obj)
             handle->State = HAL_UART_STATE_READY;
         }
     }
-    else if ((status & USART_SR_TXE) && handle->TxXferCount) {
+    else if ((status & USART_ISR_TXE) && handle->TxXferCount) {
         // chose either the tx reg empty or if last byte wait directly for tx complete
         if (--handle->TxXferCount == 0) {
             handle->Instance->CR1 &= ~USART_CR1_TXEIE;
             handle->Instance->CR1 |= USART_CR1_TCIE;
         }
         // copy new data into transmit register
-        handle->Instance->DR = (uint8_t)*handle->pTxBuffPtr++;
+        handle->Instance->TDR = (uint8_t)*handle->pTxBuffPtr++;
         obj->tx_buff.pos++;
     }
 
-    if ((status & USART_SR_RXNE) && handle->RxXferCount) {
+    if ((status & USART_ISR_RXNE) && handle->RxXferCount) {
         // something arrived in the receive buffer
         // copy into buffer
         *handle->pRxBuffPtr++ = (uint8_t)data;
