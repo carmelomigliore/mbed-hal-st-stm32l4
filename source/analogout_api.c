@@ -60,7 +60,7 @@ void analogout_init(dac_t *obj, PinName pin)
     pinmap_pinout(pin, PinMap_DAC);
 
     // Save the pin for future use
-   // obj->pin = pin;
+    obj->pin = pin;
 
     // Enable DAC clock
     __HAL_RCC_DAC1_CLK_ENABLE();
