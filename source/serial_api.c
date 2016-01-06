@@ -36,6 +36,7 @@
 #include "cmsis.h"
 #include <stdbool.h>
 #include "pinmap.h"
+#include "mbed-drivers/mbed_error.h"
 #include <string.h>
 #include "PeripheralPins.h"
 #include "target_config.h"
