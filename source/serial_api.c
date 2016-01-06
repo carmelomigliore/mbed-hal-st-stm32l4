@@ -411,14 +411,14 @@ int serial_getc(serial_t *obj)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
     while (!serial_readable(obj));
-    return (int)(handle->Instance->RDR & 0x1FF);
+    return (int)(handle->Instance->RDR & (uint32_t)0xFF);
 }
 
 void serial_putc(serial_t *obj, int c)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
     while (!serial_writable(obj));
-    handle->Instance->TDR = (uint32_t)(c & 0x1FF);
+    handle->Instance->TDR = (uint32_t)(c & (uint32_t)0xFF);
 }
 
 int serial_readable(serial_t *obj)
