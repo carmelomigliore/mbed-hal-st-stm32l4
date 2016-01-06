@@ -30,7 +30,7 @@
 
 #if DEVICE_ANALOGIN
 
-#include "wait_api.h"
+#include "mbed-drivers/wait_api.h"
 #include "cmsis.h"
 #include "pinmap.h"
 #include "mbed-drivers/mbed_error.h"
