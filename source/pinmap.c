@@ -27,10 +27,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************
  */
-#include "mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 #include "pinmap.h"
 #include "PortNames.h"
-#include "mbed_error.h"
+#include "mbed-drivers/mbed_error.h"
 
 // GPIO mode look-up table
 // Warning: order must be the same as the one defined in PinNames.h !!!

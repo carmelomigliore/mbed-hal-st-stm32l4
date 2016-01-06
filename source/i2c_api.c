@@ -27,14 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************
  */
-#include "mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 #include "i2c_api.h"
 
 #if DEVICE_I2C
 
 #include "cmsis.h"
 #include "pinmap.h"
-#include "mbed_error.h"
+#include "mbed-drivers/mbed_error.h"
 #include "PeripheralPins.h"
 
 /* Timeout values for flags and events waiting loops. These timeouts are
