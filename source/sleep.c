@@ -37,13 +37,13 @@ void mbed_enter_sleep(sleep_t *obj)
 {
     // This currently goes to Sleep Mode, because lp ticker implementation is not
     // available in the STOP mode
-    obj->TimMasterHandle.Instance = TIM5;
+    obj->TimMasterHandle.Instance = TIM_MST;
 
     // Disable HAL tick interrupt
     __HAL_TIM_DISABLE_IT(&obj->TimMasterHandle, TIM_IT_CC2);
 
     // Request to enter SLEEP mode
-    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI); //controllare diversi sleep mode (SLEEP, STOP, SHUTDOWN)
 }
 
 void mbed_exit_sleep(sleep_t *obj)
