@@ -57,7 +57,7 @@
 #   define YOTTA_CFG_MBED_OS_STDIO_DEFAULT_BAUD 9600
 #endif
 
-#define UART_NUM (8)
+#define UART_NUM (6)
 
 static UART_HandleTypeDef UartHandle[UART_NUM];
 static const IRQn_Type UartIRQs[UART_NUM] = {
@@ -139,20 +139,10 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
             obj->serial.module = 4;
             break;
 #endif
-        case UART_6:
-            __USART6_CLK_ENABLE();
+#if defined(LPUART1_BASE)
+        case LPUART_1:
+            __LPUART1_CLK_ENABLE();
             obj->serial.module = 5;
-            break;
-#if defined(UART7_BASE)
-        case UART_7:
-            __UART7_CLK_ENABLE();
-            obj->serial.module = 6;
-            break;
-#endif
-#if defined(UART8_BASE)
-        case UART_8:
-            __UART8_CLK_ENABLE();
-            obj->serial.module = 7;
             break;
 #endif
     }
@@ -235,23 +225,11 @@ void serial_free(serial_t *obj)
             __UART5_CLK_DISABLE();
             break;
 #endif
+#if defined(LPUART1_BASE)
         case 5:
-            __USART6_FORCE_RESET();
-            __USART6_RELEASE_RESET();
-            __USART6_CLK_DISABLE();
-            break;
-#if defined(UART7_BASE)
-        case 6:
-            __UART7_FORCE_RESET();
-            __UART7_RELEASE_RESET();
-            __UART7_CLK_DISABLE();
-            break;
-#endif
-#if defined(UART8_BASE)
-        case 7:
-            __UART8_FORCE_RESET();
-            __UART8_RELEASE_RESET();
-            __UART8_CLK_DISABLE();
+            __LPUART1_FORCE_RESET();
+            __LPUART1_RELEASE_RESET();
+            __LPUART1_CLK_DISABLE();
             break;
 #endif
     }
@@ -358,22 +336,10 @@ static void uart5_irq(void)
 }
 #endif
 
-static void uart6_irq(void)
+#if defined(LPUART1_BASE)
+static void lpuart1_irq(void)
 {
     uart_irq(5);
-}
-
-#if defined(UART7_BASE)
-static void uart7_irq(void)
-{
-    uart_irq(6);
-}
-#endif
-
-#if defined(UART8_BASE)
-static void uart8_irq(void)
-{
-    uart_irq(7);
 }
 #endif
 
@@ -395,14 +361,8 @@ static const uint32_t uart_irq_vectors[UART_NUM] = {
 #else
     0,
 #endif
-    (uint32_t)&uart6_irq,
-#if defined(UART7_BASE)
-    (uint32_t)&uart7_irq,
-#else
-    0,
-#endif
-#if defined(UART8_BASE)
-    (uint32_t)&uart8_irq
+#if defined(LPUART1_BASE)
+    (uint32_t)&lpuart1_irq,
 #else
     0,
 #endif
