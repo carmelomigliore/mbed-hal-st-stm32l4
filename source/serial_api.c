@@ -78,7 +78,11 @@ static const IRQn_Type UartIRQs[UART_NUM] = {
 #else
     0,
 #endif
+#if defined(UART6_BASE)
     USART6_IRQn,
+#else
+    0,
+#endif
 #if defined(UART7_BASE)
     UART7_IRQn,
 #else
