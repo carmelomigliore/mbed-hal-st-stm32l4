@@ -32,6 +32,7 @@
 #if DEVICE_SLEEP
 
 #include "cmsis.h"
+#include "hal_tick.h"
 
 void mbed_enter_sleep(sleep_t *obj)
 {
