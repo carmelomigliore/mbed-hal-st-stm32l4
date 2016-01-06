@@ -149,7 +149,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
 
     handle->Instance            = (USART_TypeDef *)instance;
-    handle->Init.BaudRate       = 9600;
+    handle->Init.BaudRate       = obj->serial.module!=5?9600:38400;  //38400 for LPUART_1
     handle->Init.WordLength     = UART_WORDLENGTH_8B;
     handle->Init.StopBits       = UART_STOPBITS_1;
     handle->Init.Parity         = UART_PARITY_NONE;
