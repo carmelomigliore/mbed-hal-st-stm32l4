@@ -149,7 +149,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
 
     handle->Instance            = (USART_TypeDef *)instance;
-    handle->Init.BaudRate       = obj->serial.module!=5?9600:38400;  //38400 for LPUART_1
+    handle->Init.BaudRate       = instance!=LPUART_1?9600:38400;  //38400 for LPUART_1
     handle->Init.WordLength     = UART_WORDLENGTH_8B;
     handle->Init.StopBits       = UART_STOPBITS_1;
     handle->Init.Parity         = UART_PARITY_NONE;
@@ -233,6 +233,10 @@ void serial_free(serial_t *obj)
 void serial_baud(serial_t *obj, int baudrate)
 {
     UART_HandleTypeDef *handle = &UartHandle[obj->serial.module];
+    
+    if (((UARTName)(handle->Instance) == LPUART_1) && (baudrate < 38400)) {
+        error("The minimum baud rate is 38400 for LPUART_1 running at 80 MHz\n");
+    }
     handle->Init.BaudRate = baudrate;
 
     HAL_UART_Init(handle);
