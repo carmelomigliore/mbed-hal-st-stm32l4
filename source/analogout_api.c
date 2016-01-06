@@ -36,6 +36,7 @@
 #include "PeripheralPins.h"
 
 #define DAC_RANGE (0xFFF) // 12 bits
+#define DAC_NB_BITS  (12)
 
 static DAC_HandleTypeDef DacHandle;
 
@@ -113,11 +114,11 @@ void analogout_free(dac_t *obj)
 static inline void dac_write(dac_t *obj, uint16_t value)
 {
     if (obj->channel == 1) {
-        HAL_DAC_SetValue(&DacHandle, DAC_CHANNEL_1, DAC_ALIGN_12B_R, value);
+        HAL_DAC_SetValue(&DacHandle, DAC_CHANNEL_1, DAC_ALIGN_12B_R, value & DAC_RANGE);
         HAL_DAC_Start(&DacHandle, DAC_CHANNEL_1);
     }
     if (obj->channel == 2) {
-        HAL_DAC_SetValue(&DacHandle, DAC_CHANNEL_2, DAC_ALIGN_12B_R, value);
+        HAL_DAC_SetValue(&DacHandle, DAC_CHANNEL_2, DAC_ALIGN_12B_R, value & DAC_RANGE);
         HAL_DAC_Start(&DacHandle, DAC_CHANNEL_2);
     }
 }
@@ -138,30 +139,25 @@ void analogout_write(dac_t *obj, float value)
     if (value < 0.0f) {
         dac_write(obj, 0); // Min value
     } else if (value > 1.0f) {
-        dac_write(obj, (uint16_t)DAC_RANGE); // Max value
+        dac_write(obj, (int)DAC_RANGE); // Max value
     } else {
-        dac_write(obj, (uint16_t)(value * (float)DAC_RANGE));
+        dac_write(obj, (int)(value * (float)DAC_RANGE));
     }
 }
 
-void analogout_write_u16(dac_t *obj, uint16_t value)
-{
-    if (value > (uint16_t)DAC_RANGE) {
-        dac_write(obj, (uint16_t)DAC_RANGE); // Max value
-    } else {
-        dac_write(obj, value);
-    }
+void analogout_write_u16(dac_t *obj, uint16_t value) {
+     dac_write(obj, value >> (16 - DAC_NB_BITS));
 }
 
 float analogout_read(dac_t *obj)
 {
     uint32_t value = dac_read(obj);
-    return (float)((float)value * (1.0f / (float)DAC_RANGE));
+    return (float)value * (1.0f / (float)DAC_RANGE);
 }
 
-uint16_t analogout_read_u16(dac_t *obj)
-{
-    return (uint16_t)dac_read(obj);
+uint16_t analogout_read_u16(dac_t *obj) {
+    uint32_t value = dac_read(obj);
+    return (value << 4) | ((value >> 8) & 0x000F); // Conversion from 12 to 16 bits
 }
 
 #endif // DEVICE_ANALOGOUT
