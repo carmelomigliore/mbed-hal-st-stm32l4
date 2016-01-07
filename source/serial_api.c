@@ -154,6 +154,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     handle->Init.WordLength     = UART_WORDLENGTH_8B;
     handle->Init.StopBits       = UART_STOPBITS_1;
     handle->Init.Parity         = UART_PARITY_NONE;
+    
     if (rx == NC) {
         handle->Init.Mode = UART_MODE_TX;
     } else if (tx == NC) {
@@ -163,6 +164,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     }
     handle->Init.HwFlowCtl      = UART_HWCONTROL_NONE;
     handle->Init.OverSampling   = UART_OVERSAMPLING_16;
+    handle->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_ENABLE;
     handle->TxXferCount         = 0;
     handle->RxXferCount         = 0;
 
@@ -257,15 +259,15 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
 
     switch (parity) {
         case ParityOdd:
-            handle->Init.Parity = UART_PARITY_ODD;
+        case ParityForced0:
+            obj->parity = UART_PARITY_ODD;
             break;
         case ParityEven:
-            handle->Init.Parity = UART_PARITY_EVEN;
+        case ParityForced1:
+            obj->parity = UART_PARITY_EVEN;
             break;
         default: // ParityNone
-        case ParityForced0: // unsupported!
-        case ParityForced1: // unsupported!
-            handle->Init.Parity = UART_PARITY_NONE;
+            obj->parity = UART_PARITY_NONE;
             break;
     }
 
