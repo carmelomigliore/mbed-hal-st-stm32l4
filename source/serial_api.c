@@ -260,14 +260,14 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
     switch (parity) {
         case ParityOdd:
         case ParityForced0:
-            obj->parity = UART_PARITY_ODD;
+            handle->Init.Parity = UART_PARITY_ODD;
             break;
         case ParityEven:
         case ParityForced1:
-            obj->parity = UART_PARITY_EVEN;
+            handle->Init.Parity = UART_PARITY_EVEN;
             break;
         default: // ParityNone
-            obj->parity = UART_PARITY_NONE;
+            handle->Init.Parity = UART_PARITY_NONE;
             break;
     }
 
