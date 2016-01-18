@@ -291,7 +291,7 @@ static void uart_irq(uint8_t id)
     UART_HandleTypeDef *handle = &UartHandle[id];
 
     if (serial_irq_ids[id] != 0) {
-        if (__HAL_UART_GET_FLAG(handle, UART_FLAG_TC) != RESET) {
+        if (__HAL_UART_GET_FLAG(handle, UART_FLAG_TC) != RESET && handle->Instance != UART_1) {     //DIRTY HACK!!! DISABLE Tx Interrupt on UART1
             irq_handlers[id](serial_irq_ids[id], TxIrq);
             __HAL_UART_CLEAR_FLAG(handle, UART_FLAG_TC);
         }
